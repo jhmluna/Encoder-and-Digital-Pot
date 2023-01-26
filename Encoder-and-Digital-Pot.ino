@@ -23,17 +23,14 @@
 #include "X9C10X.h"
 
 X9C10X pot(10000);  // Initializes the resistance to 10 KΩ
-#define PIN_IN1 6
-#define PIN_IN2 7
 
 // A pointer to the dynamic created rotary encoder instance.
 // This will be done in setup()
 RotaryEncoder *encoder = nullptr;
 
-// This interrupt routine will be called on any change of one of the input signals
-// void checkPosition() {
-//   encoder->tick();  // just call tick() to check the state.
-// }
+// Encoder input pins
+#define PIN_IN1 6
+#define PIN_IN2 7
 
 // The Interrupt Service Routine for Pin Change Interrupt 2
 // This routine will only be called on any signal change on D6 and D7.
