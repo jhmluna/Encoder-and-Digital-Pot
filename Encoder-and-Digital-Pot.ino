@@ -1,25 +1,18 @@
 // -----
-// InterruptRotator.ino - Example for the RotaryEncoder library.
-// This class is implemented for use with the Arduino environment.
-//
-// Copyright (c) by Matthias Hertel, http://www.mathertel.de
-// This work is licensed under a BSD 3-Clause License. See http://www.mathertel.de/License.aspx
-// More information on: http://www.mathertel.de/Arduino
+// Programa de exemplo baseado em InterruptRotator.ino da biblioteca RotaryEncoder.
+// Também utiliza a biblioteca X9C10X para o potênciômetro digital X9C10X .
+// Esta classe é implementada para uso no ambiente do Arduino.
 // -----
-// 18.01.2014 created by Matthias Hertel
-// 04.02.2021 conditions and settings added for ESP8266
-// 03.07.2022 avoid ESP8266 compiler warnings.
-// 03.07.2022 encoder instance not static.
+// 25/01/2023 - Início
 // -----
 
-// This example checks the state of the rotary encoder using interrupts and in the loop() function.
+// This example checks the state of the rotary encoder using interrupts.
 // The current position and direction is printed on output when changed.
 
 // Hardware setup:
 // Attach a rotary encoder with output pins to
 // * 2 and 3 on Arduino UNO. (supported by attachInterrupt)
 // * A2 and A3 can be used when directly using the ISR interrupts, see comments below.
-// * D5 and D6 on ESP8266 board (e.g. NodeMCU).
 // Swap the pins when direction is detected wrong.
 // The common contact should be attached to ground.
 //
@@ -29,8 +22,7 @@
 #include <RotaryEncoder.h>
 #include "X9C10X.h"
 
-X9C10X pot(10000);  //  10 KΩ  (ALT-234)
-
+X9C10X pot(10000);  // Initializes the resistance to 10 KΩ
 #define PIN_IN1 3
 #define PIN_IN2 2
 
@@ -52,8 +44,8 @@ void setup()
   Serial.println("InterruptRotator example for the RotaryEncoder library.");
 
   // Digital Pot configuration
-  pot.begin(5, 6, 7);  // pulse, direction, select
-  pot.setPosition(0);
+  pot.begin(5, 6, 7);  // (pulse, direction, select)
+  pot.setPosition(0, true); // The wiper will be moved to the closest "end" position and from there moved to the 0 position.
 
   // Setup the rotary encoder functionality
   // Use TWO03 mode when PIN_IN1, PIN_IN2 signals are both LOW or HIGH in latch position.
