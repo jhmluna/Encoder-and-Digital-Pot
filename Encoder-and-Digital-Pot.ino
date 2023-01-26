@@ -23,57 +23,63 @@
 #include "X9C10X.h"
 
 X9C10X pot(10000);  // Initializes the resistance to 10 KΩ
-#define PIN_IN1 3
-#define PIN_IN2 2
+#define PIN_IN1 6
+#define PIN_IN2 7
 
 // A pointer to the dynamic created rotary encoder instance.
 // This will be done in setup()
 RotaryEncoder *encoder = nullptr;
 
 // This interrupt routine will be called on any change of one of the input signals
-void checkPosition()
-{
+// void checkPosition() {
+//   encoder->tick();  // just call tick() to check the state.
+// }
+
+// The Interrupt Service Routine for Pin Change Interrupt 2
+// This routine will only be called on any signal change on D6 and D7.
+ISR(PCINT2_vect) {
   encoder->tick(); // just call tick() to check the state.
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   while (!Serial)
     ;
   Serial.println("InterruptRotator example for the RotaryEncoder library.");
 
   // Digital Pot configuration
-  pot.begin(5, 6, 7);  // (pulse, direction, select)
-  pot.setPosition(0, true); // The wiper will be moved to the closest "end" position and from there moved to the 0 position.
+  pot.begin(2, 3, 4);        // (pulse, direction, select)
+  pot.setPosition(0, true);  // The wiper will be moved to the closest "end" position and from there moved to the 0 position.
 
   // Setup the rotary encoder functionality
   // Use TWO03 mode when PIN_IN1, PIN_IN2 signals are both LOW or HIGH in latch position.
   encoder = new RotaryEncoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::TWO03);
 
-  // Register interrupt routine
-  attachInterrupt(digitalPinToInterrupt(PIN_IN1), checkPosition, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PIN_IN2), checkPosition, CHANGE);
-} // setup()
+  // To use other pins with Arduino UNO you can also use the ISR directly.
+  // Here is some code for D6 and D7 using ATMega328P specific registers.
+
+  // Setup flags to activate the ISR PCINT2.
+    PCICR |= (1 << PCIE2);    // This enables Pin Change Interrupt 2 that covers the Digital input pins or Port D.
+    PCMSK2 |= (1 << PCINT22) | (1 << PCINT23);  // This enables the interrupt for pin 6 and 7 of Port D.
+}  // setup()
 
 
 // Read the current position of the encoder and print out when changed.
-void loop()
-{
+void loop() {
   static int pos = 0;
 
   int newPos = encoder->getPosition();
   if (pos != newPos) {
-    if ((int)(encoder->getDirection()) > 0) {
+    int direction = (int)(encoder->getDirection());
+    if (direction > 0) {
       pot.incr();
-    }
-    else {
-      pot.decr();    
+    } else {
+      pot.decr();
     }
     Serial.print("pos:");
     Serial.print(newPos);
     Serial.print(" dir:");
-    Serial.println((int)(encoder->getDirection()));
+    Serial.println(direction);
     pos = newPos;
-  } // if
-} // loop ()
+  }  // if
+}  // loop ()
