@@ -19,8 +19,8 @@
 // Hints for using attachinterrupt see https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 
 #include <Arduino.h>
-#include <RotaryEncoder.h>
-#include "X9C10X.h"
+#include <RotaryEncoder.h>      // https://github.com/mathertel/RotaryEncoder
+#include "X9C10X.h"             // https://github.com/RobTillaart/X9C10X
 #include <JC_Button.h>          // https://github.com/JChristensen/JC_Button
 
 // Encoder pin assignments and setup
@@ -72,29 +72,33 @@ void setup() {
 void loop() {
   static int pos = 0;
 
-  static int encoder_step = 1;  // a variable that keeps the rotary encoder step  
-  static bool button_state;         // a variable that keeps the current LED status
+  static bool encoder_fine_step = false;         // a variable that keeps the current step status for encoder
   encoder_Btn.read();         // read the button
 
   int newPos = encoder->getPosition();
   if (pos != newPos) {
     int direction = (int)(encoder->getDirection());
     if (direction > 0) {
-      voltage_coarse.incr(encoder_step);
+      if (encoder_fine_step)
+        voltage_fine.incr();
+      else
+        voltage_coarse.incr();        
     } else {
-      voltage_coarse.decr(encoder_step);
+      if (encoder_fine_step)
+        voltage_fine.decr();
+      else
+        voltage_coarse.decr();
     }
     Serial.print("pos:");
     Serial.print(newPos);
     Serial.print(" dir:");
     Serial.println(direction);
     pos = newPos;
-    Serial.println(encoder_step);
+    Serial.println(encoder_fine_step);
   }  // if
 
   if (encoder_Btn.wasReleased())    // if the button was released, change the LED state
   {
-    button_state = !button_state;
-    encoder_step = button_state == HIGH ? 5 : 1;
+    encoder_fine_step = !encoder_fine_step;
   }
 } // loop()
