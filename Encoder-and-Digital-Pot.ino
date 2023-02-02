@@ -3,20 +3,14 @@
 // Também utiliza a biblioteca X9C10X para o voltage_coarseênciômetro digital X9C10X .
 // Esta classe é implementada para uso no ambiente do Arduino.
 // -----
-// 25/01/2023 - Início
-// -----
 
-// This example checks the state of the rotary encoder using interrupts.
-// The current position and direction is printed on output when changed.
+// Este exemplo verifica o estado do rotary encoder usando interrupções de mudança de estado do pino.
+// A posição e direção atuais são impressas na saída quando alteradas.
 
-// Hardware setup:
-// Attach a rotary encoder with output pins to
-// * 2 and 3 on Arduino UNO. (supported by attachInterrupt)
-// * A2 and A3 can be used when directly using the ISR interrupts, see comments below.
-// Swap the pins when direction is detected wrong.
-// The common contact should be attached to ground.
-//
-// Hints for using attachinterrupt see https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+// Configuração de hardware:
+// Conecte o rotary encoder com pinos de saída para os pinos 6 e 7 no Arduino UNO.
+// Troque os pinos quando a direção detectada estiver errada.
+// O contato comum deve ser conectado ao terra.
 
 #include <Arduino.h>
 #include <RotaryEncoder.h>      // https://github.com/mathertel/RotaryEncoder
@@ -26,8 +20,7 @@
 // Encoder pin assignments and setup
 const byte ENCODER_BUTTON_PIN(5);              // connect a button switch from this pin to ground
 Button encoder_Btn(ENCODER_BUTTON_PIN);       // define the button
-// A pointer to the dynamic created rotary encoder instance.
-// This will be done in setup()
+// A pointer to the dynamic created rotary encoder instance done in setup().
 RotaryEncoder *encoder = nullptr;
 // Encoder input pins
 #define PIN_IN1 6
