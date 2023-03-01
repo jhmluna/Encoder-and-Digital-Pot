@@ -44,7 +44,7 @@ ISR(PCINT2_vect) {
   encoder->tick();  // Just call tick() to check the state.
 }
 
-// Timer1 Interrupt setup
+// Timer1 Interrupt setup used to increment digital pot.
 // https://www.best-microcontroller-projects.com/arduino-timer-interrupt.html
 void setup_T1(void) {
 
@@ -64,7 +64,7 @@ void setup_T1(void) {
   sei(); // Allow interrupts
 }
 
-// Interrupt on Timer 1 overflow.
+// Interrupt on Timer 1 overflow. Increment digital pot.
 ISR(TIMER1_OVF_vect) {
   // Toggle Led pin status.
   val_debug_pin = !val_debug_pin;
@@ -82,8 +82,7 @@ ISR(TIMER1_OVF_vect) {
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial)
-    ;
+  while (!Serial);
   Serial.println("InterruptRotator example for the RotaryEncoder library.");
 
   // Digital pot configuration
@@ -122,7 +121,8 @@ void loop() {
   int newPos = encoder->getPosition();
   if (pos != newPos) {
     int direction = (int)(encoder->getDirection());
-/*     Serial.print("Pos = ");
+    /*
+    Serial.print("Pos = ");
     Serial.print(pos);
     Serial.print("  |  New Pos = ");
     Serial.println(newPos); */
@@ -144,7 +144,7 @@ void loop() {
   {
     encoder_fine_step = !encoder_fine_step;
   }
-  if (sweep_Btn.wasReleased())  // if the sweep button was released, set digital pots and start ramp up;
+  if (sweep_Btn.wasReleased())  // if the sweep button was released, set digital pots and start Timer1 ramp up of digital pot;
   {
     Serial.println("Sweep button pressed.");
     voltage_coarse.setPosition(0, true);
@@ -154,8 +154,5 @@ void loop() {
     setup_T1();
   }
 
-  if (val_debug_pin) {    
-    digitalWrite(LED_PIN, HIGH);
-  }
-  else digitalWrite(LED_PIN, LOW);
+  if (val_debug_pin) digitalWrite(LED_PIN, HIGH); else digitalWrite(LED_PIN, LOW);
 }  // loop()
