@@ -3,11 +3,9 @@
 // Também utiliza a biblioteca X9C10X para o voltage_coarseênciômetro digital X9C10X .
 // Esta classe é implementada para uso no ambiente do Arduino.
 // -----
-// 25/01/2023 - Início
-// -----
 
-// This example checks the state of the rotary encoder using interrupts.
-// The current position and direction is printed on output when changed.
+// Este exemplo verifica o estado do rotary encoder usando interrupções de mudança de estado do pino.
+// A posição e direção atuais são impressas na saída quando alteradas.
 
 // Hardware setup:
 // Attach a rotary encoder with output pins to D6 and D7 on Arduino Nano. Atach encoder switch to D5.
