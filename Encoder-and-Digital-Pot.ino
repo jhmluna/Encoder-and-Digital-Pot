@@ -31,12 +31,13 @@ RotaryEncoder *encoder = nullptr;
 #define PIN_IN1 6
 #define PIN_IN2 7
 
-// Digital pot setup
+// Digital pot definition
 X9C104 voltage_coarse(100000);  // Initializes the resistance to 100 KΩ
 X9C103 voltage_fine(10000);     // Initializes the resistance to 10 KΩ
 
 #define LED_PIN LED_BUILTIN
-volatile bool val_debug_pin = 0;
+volatile bool val_debug_pin = false;
+volatile int voltage_ramp_up_counter = 0;
 
 // The Interrupt Service Routine for Pin Change Interrupt 2. This routine will only be called on any signal change on D6 and D7.
 ISR(PCINT2_vect) {
@@ -52,12 +53,12 @@ void setup_T1(void) {
   // Set Timer1 interrupt at 1 Hz
   TCCR1A = 0; // Set entire TCCR1A register to 0
   TCCR1B = 0; // Same for TCCR1B
-  TCNT1  = 0; // Initialize counter value to 0
+  TCNT1  = 0; // Initialize tIMER1 counter value to 0
   OCR1A = 0;  // Set compare match register OCR1A to 0
   OCR1B = 0;  // Same for OCR1B
-  // Set CS10 and CS12 bits for 1024 prescaler
-  TCCR1B |= (1 << CS12);  
-  // Enable timer compare interrupt
+  // Set CS11 bit for 256 prescaler
+  TCCR1B |= (1 << CS11);  
+  // Enable Timer1 Overflow Interrupt
   TIMSK1 |= (1 << TOIE1);
 
   sei(); // Allow interrupts
@@ -65,9 +66,18 @@ void setup_T1(void) {
 
 // Interrupt on Timer 1 overflow.
 ISR(TIMER1_OVF_vect) {
-  // Toggle Led pin. 
+  // Toggle Led pin status.
   val_debug_pin = !val_debug_pin;
-  if (val_debug_pin) digitalWrite(LED_PIN, HIGH); else digitalWrite(LED_PIN, LOW);
+  if (voltage_ramp_up_counter > 99) {
+    TCCR1B &= ~(1 << CS11); // Stop Timer1/Counter
+    TIMSK1 |= (1 << TOIE1); // Disable Timer1 Overflow Interrupt
+    TCNT1 = 0;
+    voltage_ramp_up_counter = 0;
+    val_debug_pin = false;
+  } else {
+    voltage_coarse.incr();
+    voltage_ramp_up_counter += 1;
+  }
 }
 
 void setup() {
@@ -77,10 +87,10 @@ void setup() {
   Serial.println("InterruptRotator example for the RotaryEncoder library.");
 
   // Digital pot configuration
-  voltage_coarse.begin(2, 3, 4);        // (pulse, direction, select)
-  voltage_coarse.setPosition(0);  // The wiper will be moved to the closest "end" position and from there moved to the 0 position.
+  voltage_coarse.begin(2, 3, 4);   // (pulse, direction, select)
+  voltage_coarse.setPosition(0, true);  // The wiper will be moved to the closest "end" position and from there moved to the 0 position.
   voltage_fine.begin(2, 3, 8);
-  voltage_fine.setPosition(0);
+  voltage_fine.setPosition(0, true);
 
   // Setup the rotary encoder functionality
   // Use TWO03 mode when PIN_IN1, PIN_IN2 signals are both LOW or HIGH in latch position.
@@ -99,7 +109,6 @@ void setup() {
 
   // Interrupt test
   pinMode(LED_PIN, OUTPUT);
-  setup_T1();
 }  // setup()
 
 // Read the current position of the encoder and print out when changed.
@@ -113,6 +122,10 @@ void loop() {
   int newPos = encoder->getPosition();
   if (pos != newPos) {
     int direction = (int)(encoder->getDirection());
+/*     Serial.print("Pos = ");
+    Serial.print(pos);
+    Serial.print("  |  New Pos = ");
+    Serial.println(newPos); */
     if (direction > 0) {
       if (encoder_fine_step)
         voltage_fine.incr();
@@ -131,8 +144,18 @@ void loop() {
   {
     encoder_fine_step = !encoder_fine_step;
   }
-  if (sweep_Btn.wasReleased())  // if the sweep button was released, print message
+  if (sweep_Btn.wasReleased())  // if the sweep button was released, set digital pots and start ramp up;
   {
-     Serial.println("Sweep button pressed.");
+    Serial.println("Sweep button pressed.");
+    voltage_coarse.setPosition(0, true);
+    voltage_fine.setPosition(49, true);
+    encoder_fine_step = false;
+    delay(1000);
+    setup_T1();
   }
+
+  if (val_debug_pin) {    
+    digitalWrite(LED_PIN, HIGH);
+  }
+  else digitalWrite(LED_PIN, LOW);
 }  // loop()
