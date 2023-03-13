@@ -86,9 +86,9 @@ void setup() {
   Serial.println("InterruptRotator example for the RotaryEncoder library.");
 
   // Digital pot configuration
-  voltage_coarse.begin(2, 3, 4);   // (pulse, direction, select)
+  voltage_coarse.begin(10, 11, 4);   // (pulse, direction, select)
   voltage_coarse.setPosition(0, true);  // The wiper will be moved to the closest "end" position and from there moved to the 0 position.
-  voltage_fine.begin(2, 3, 8);
+  voltage_fine.begin(10, 11, 8);
   voltage_fine.setPosition(0, true);
 
   // Setup the rotary encoder functionality
